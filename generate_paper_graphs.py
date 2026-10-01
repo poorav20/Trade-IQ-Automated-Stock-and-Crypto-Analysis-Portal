@@ -4,7 +4,7 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 
-OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'paper_graphs')
+OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'artifacts', 'figures', 'paper_graphs')
 os.makedirs(OUT_DIR, exist_ok=True)
 
 sns.set_theme(style="whitegrid")

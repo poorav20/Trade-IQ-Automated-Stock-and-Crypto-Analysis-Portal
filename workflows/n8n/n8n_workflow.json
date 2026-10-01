@@ -1,0 +1,191 @@
+{
+  "name": "TradeIQ Advanced Portal Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      },
+      "id": "schedule-every-5-min",
+      "name": "Every 5 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [120, 300],
+      "notes": "Runs the full TradeIQ local paper-trading cycle every 5 minutes."
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8502/",
+        "options": {
+          "timeout": 10000,
+          "ignore4xxStatusCode": true
+        }
+      },
+      "id": "bridge-health",
+      "name": "Bridge Health Check",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [340, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8502/webhook/fetch-data",
+        "method": "POST",
+        "options": {
+          "timeout": 180000,
+          "ignore4xxStatusCode": true
+        }
+      },
+      "id": "fetch-market-data",
+      "name": "Fetch Market Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [560, 300],
+      "notes": "Calls data_fetcher.fetch_and_store() so yfinance data is saved into trading.db."
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8502/webhook/sentiment",
+        "method": "POST",
+        "options": {
+          "timeout": 180000,
+          "ignore4xxStatusCode": true
+        }
+      },
+      "id": "run-sentiment",
+      "name": "Run Sentiment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [780, 200],
+      "notes": "Fetches Google News RSS through Python, scores headlines, and saves sentiment rows."
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8502/webhook/predict",
+        "method": "POST",
+        "options": {
+          "timeout": 240000,
+          "ignore4xxStatusCode": true
+        }
+      },
+      "id": "run-ml-predictions",
+      "name": "Run ML Predictions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [780, 400],
+      "notes": "Runs the ensemble prediction pipeline and saves latest BUY/SELL/HOLD signals."
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8502/webhook/signals",
+        "options": {
+          "timeout": 30000,
+          "ignore4xxStatusCode": true
+        }
+      },
+      "id": "load-latest-signals",
+      "name": "Load Latest Signals",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1000, 300],
+      "notes": "Reads the latest saved signals from ml_predictions."
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.first().json;\nconst signals = result.signals || [];\nconst buys = [];\nconst sells = [];\nconst holds = [];\n\nfor (const signal of signals) {\n  const row = {\n    ticker: signal.ticker,\n    signal: signal.signal,\n    confidence: Number(signal.confidence || 0),\n    predicted_price: Number(signal.predicted_price || 0),\n    predicted_date: signal.predicted_date,\n    created_at: signal.created_at\n  };\n\n  if (row.signal === 'BUY') buys.push(row);\n  else if (row.signal === 'SELL') sells.push(row);\n  else holds.push(row);\n}\n\nbuys.sort((a, b) => b.confidence - a.confidence);\nsells.sort((a, b) => b.confidence - a.confidence);\n\nreturn [{\n  status: result.status || 'unknown',\n  total: signals.length,\n  buy_count: buys.length,\n  sell_count: sells.length,\n  hold_count: holds.length,\n  top_buys: buys.slice(0, 5),\n  top_sells: sells.slice(0, 5),\n  timestamp: new Date().toISOString()\n}];"
+      },
+      "id": "route-signals",
+      "name": "Route Signals",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1220, 300],
+      "notes": "Groups latest signals for reporting and downstream notification."
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8502/webhook/run-cycle",
+        "method": "POST",
+        "options": {
+          "timeout": 240000,
+          "ignore4xxStatusCode": true
+        }
+      },
+      "id": "execute-paper-trades",
+      "name": "Execute Paper Trades",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1440, 300],
+      "notes": "Runs BUY/SELL agents with risk controls in paper mode."
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8502/webhook/status",
+        "options": {
+          "timeout": 30000,
+          "ignore4xxStatusCode": true
+        }
+      },
+      "id": "portfolio-status",
+      "name": "Portfolio Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1660, 300],
+      "notes": "Reads cash, starting balance, open positions, and recent trades."
+    },
+    {
+      "parameters": {
+        "jsCode": "const signalReport = $('Route Signals').first().json;\nconst tradeResult = $('Execute Paper Trades').first().json;\nconst portfolio = $input.first().json;\nconst summary = tradeResult.summary || {};\nconst ts = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });\nconst cash = Number(portfolio.cash || 0);\nconst starting = Number(portfolio.starting || 100000);\nconst pnl = cash - starting;\nconst pnlPct = starting ? (pnl / starting) * 100 : 0;\n\nconst lines = [];\nlines.push(`TradeIQ Auto-Trader Report`);\nlines.push(`${ts} IST`);\nlines.push('');\nlines.push(`Cash: INR ${cash.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`);\nlines.push(`Paper P&L: ${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)} (${pnlPct.toFixed(2)}%)`);\nlines.push(`Open positions: ${(portfolio.open_positions || []).length}`);\nlines.push('');\nlines.push(`Signals: BUY ${signalReport.buy_count}, SELL ${signalReport.sell_count}, HOLD ${signalReport.hold_count}`);\nlines.push(`Trades this cycle: Buys ${summary.buys || 0}, Sells ${summary.sells || 0}, Skipped ${summary.skipped || 0}`);\n\nif ((signalReport.top_buys || []).length) {\n  lines.push('');\n  lines.push('Top BUY signals:');\n  for (const s of signalReport.top_buys) {\n    lines.push(`${s.ticker}: confidence ${(s.confidence * 100).toFixed(0)}%, target ${s.predicted_price.toFixed(2)}`);\n  }\n}\n\nif ((signalReport.top_sells || []).length) {\n  lines.push('');\n  lines.push('Top SELL signals:');\n  for (const s of signalReport.top_sells) {\n    lines.push(`${s.ticker}: confidence ${(s.confidence * 100).toFixed(0)}%, target ${s.predicted_price.toFixed(2)}`);\n  }\n}\n\nreturn [{\n  timestamp: new Date().toISOString(),\n  message: lines.join('\\n'),\n  cash,\n  starting,\n  pnl,\n  pnl_pct: pnlPct,\n  open_positions: (portfolio.open_positions || []).length,\n  recent_trades: portfolio.recent_trades || [],\n  signal_report: signalReport,\n  trade_summary: summary\n}];"
+      },
+      "id": "build-cycle-report",
+      "name": "Build Cycle Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1880, 300],
+      "notes": "Final workflow output. Add Telegram, Email, Discord, or Google Sheets nodes after this node if desired."
+    }
+  ],
+  "connections": {
+    "Every 5 Minutes": {
+      "main": [[{ "node": "Bridge Health Check", "type": "main", "index": 0 }]]
+    },
+    "Bridge Health Check": {
+      "main": [[{ "node": "Fetch Market Data", "type": "main", "index": 0 }]]
+    },
+    "Fetch Market Data": {
+      "main": [[{ "node": "Run Sentiment", "type": "main", "index": 0 }]]
+    },
+    "Run Sentiment": {
+      "main": [[{ "node": "Run ML Predictions", "type": "main", "index": 0 }]]
+    },
+    "Run ML Predictions": {
+      "main": [[{ "node": "Load Latest Signals", "type": "main", "index": 0 }]]
+    },
+    "Load Latest Signals": {
+      "main": [[{ "node": "Route Signals", "type": "main", "index": 0 }]]
+    },
+    "Route Signals": {
+      "main": [[{ "node": "Execute Paper Trades", "type": "main", "index": 0 }]]
+    },
+    "Execute Paper Trades": {
+      "main": [[{ "node": "Portfolio Status", "type": "main", "index": 0 }]]
+    },
+    "Portfolio Status": {
+      "main": [[{ "node": "Build Cycle Report", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "tradeiq-advanced-local"
+  }
+}

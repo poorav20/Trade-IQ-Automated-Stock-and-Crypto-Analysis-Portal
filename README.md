@@ -1,232 +1,92 @@
-# TradeIQ – Automated Trading Portal
+# TradeIQ
 
-[![GitHub license](https://img.shields.io/github/license/your‑username/tradeiq)](LICENSE)  
-[![GitHub stars](https://img.shields.io/github/stars/your‑username/tradeiq?style=social)](https://github.com/your-username/tradeiq/stargazers)  
-[![GitHub issues](https://img.shields.io/github/issues/your‑username/tradeiq)](https://github.com/your-username/tradeiq/issues)  
+TradeIQ is a local-first stock and cryptocurrency analysis portal with a Streamlit dashboard, market-data ingestion, ML signals, news sentiment, paper-trading tools, and an optional n8n automation bridge.
 
----  
+## Quick Start
 
-## Table of Contents  
+Requirements: Python 3.10 or newer. From the repository directory, create and activate a virtual environment, install dependencies, and copy the example environment file:
 
-1. [Project Overview](#project-overview)  
-2. [Key Features](#key-features)  
-3. [Architecture Diagram](#architecture-diagram)  
-4. [Installation](#installation)  
-5. [Configuration](#configuration)  
-6. [Running the Application](#running-the-application)  
-7. [Demo & Screenshots](#demo--screenshots)  
-8. [Testing](#testing)  
-9. [Contribution Guide](#contribution-guide)  
-10. [Roadmap](#roadmap)  
-11. [Citing the Project](#citing-the-project)  
-12. [License](#license)  
-13. [Acknowledgements](#acknowledgements)  
-
----  
-
-## Project Overview  
-
-**TradeIQ** is a modern, **paper‑trading** portal built with **Streamlit** that combines **LLM‑driven decision making**, **technical‑indicator analysis**, and a **risk‑management layer**. It enables users to:
-
-* Simulate multi‑asset trading strategies in real‑time.  
-* Visualize sentiment, price‑action, and risk metrics with interactive charts.  
-* Deploy custom Python‑based plugins for new data sources or broker APIs.  
-
-The repository follows a **clean modular architecture** inspired by the Hyperliquid‑trading‑agent design, allowing easy swapping of the LLM, risk manager, or indicator suite.
-
----  
-
-## Key Features  
-
-| Feature | Description |
-|---------|-------------|
-| **LLM Agent** | Uses OpenAI / Gemini APIs (configurable) to generate trade signals from market context and user prompts. |
-| **Technical Indicators** | Built‑in SMA, EMA, RSI, MACD, VADER‑sentiment, and custom indicator plug‑ins. |
-| **Risk Management** | Position sizing, stop‑loss/take‑profit, portfolio‑level VaR checks, and hysteresis‑based guardrails. |
-| **Paper‑Trading Engine** | Event‑driven loop that executes simulated orders against a SQLite‑backed `trading.db`. |
-| **Streamlit UI** | Real‑time dashboards: order book, trade log, equity curve, heat‑maps, and sentiment timeline. |
-| **Data Generation** | Utility scripts (`generate_demo_data.py`, `generate_paper_graphs.py`) for fast prototyping. |
-| **Extensible Plugin System** | Drop a `*.py` file into `plugins/` to add new data feeds or broker adapters without touching core code. |
-| **CI/CD** | GitHub Actions workflow for linting, testing, and automatic Docker image publishing. |
-
----  
-
-## Architecture Diagram  
-
-```mermaid
-graph TD
-    A[Streamlit Front‑end] --> B[API Router]
-    B --> C[LLM Agent]
-    B --> D[Risk Manager]
-    B --> E[Technical Indicator Engine]
-    C --> F[LLM Provider (OpenAI / Gemini)]
-    D --> G[Portfolio State (SQLite DB)]
-    E --> H[Indicator Plug‑ins]
-    G --> I[Order Execution Loop]
-    I --> J[Trade Log & Equity Curve]
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style B fill:#bbf,stroke:#333,stroke-width:2px
-```
-
----  
-
-## Installation  
-
-> **Prerequisites**  
-> * **Python ≥ 3.10** (recommended 3.11)  
-> * **Git** (for cloning)  
-> * **Node ≥ 18** *(optional – only for building docs)*  
-
-```bash
-# 1️⃣ Clone the repository
-git clone https://github.com/your-username/tradeiq.git
-cd tradeiq
-
-# 2️⃣ Create a virtual environment (highly recommended)
-python -m venv .venv
-.\.venv\Scripts\activate   # Windows
-# source .venv/bin/activate   # macOS / Linux
-
-# 3️⃣ Install dependencies
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
 pip install -r requirements.txt
-
-# 4️⃣ Optional: install development extras (pre‑commit, black, flake8)
-pip install -r dev-requirements.txt
-pre-commit install
+Copy-Item .env.example .env
 ```
 
----  
+Edit `.env` only for integrations you use. Keep live broker mode disabled unless you have explicitly configured and tested the broker credentials. Then initialize the local database, fetch market data, and start the dashboard:
 
-## Configuration  
-
-All configurable values reside in `config.yaml`. Copy the template and edit as needed:
-
-```bash
-cp config.example.yaml config.yaml
-```
-
-Key sections:
-
-| Section | Variable | Description |
-|---------|----------|-------------|
-| `llm` | `provider` | `"openai"` or `"gemini"` |
-| | `api_key` | Your provider API key (keep secret) |
-| `risk` | `max_position_pct` | Max portfolio exposure per asset |
-| | `stop_loss_pct` | Fixed stop‑loss threshold |
-| `database` | `path` | Path to SQLite DB (default `data/trading.db`) |
-| `ui` | `theme` | `"dark"` / `"light"` (Streamlit theme) |
-
----  
-
-## Running the Application  
-
-```bash
+```powershell
+python database.py
+python data_fetcher.py
+python ml_model_v2.py
 streamlit run app.py
 ```
 
-The UI will be served at `http://localhost:8501`.  
-- **Dashboard** – Overview of portfolio equity, trade log, and live charts.  
-- **Strategy Builder** – Select indicators, set LLM prompt templates, and tweak risk parameters.  
+Open [http://localhost:8501](http://localhost:8501). Data providers may limit or change access; the dashboard requires an internet connection for live quotes and news.
 
----  
+## Historical CSV Data
 
-## Demo & Screenshots  
+Historical data is optional. Put OHLCV CSV files in `data/raw/`; `load_and_train.py` and `train_agents.py` discover files there. Then run the ingestion/training command you need:
 
-| Screenshot | Description |
-|-----------|-------------|
-| ![Dashboard](file:///C:/Users/poora/.gemini/antigravity/artifacts/dashboard.png) | Main trading dashboard with equity curve and live order book. |
-| ![Strategy Panel](file:///C:/Users/poora/.gemini/antigravity/artifacts/strategy_panel.png) | Strategy configuration panel (indicator selection, LLM prompt). |
-| ![Risk Heatmap](file:///C:/Users/poora/.gemini/antigravity/artifacts/risk_heatmap.png) | Portfolio‑level VaR heatmap generated by the risk manager. |
-
-*(Screenshots are placeholders – replace with actual images after a local run.)*  
-
----  
-
-## Testing  
-
-The project includes a comprehensive test suite powered by **pytest**.
-
-```bash
-# Run all unit and integration tests
-pytest -v
+```powershell
+python load_and_train.py
+# or
+python train_agents.py
 ```
 
-Coverage report:
+Raw datasets are excluded from Git because they can be large and may have separate redistribution terms. The database and training output are local runtime files and are excluded too.
 
-```bash
-coverage run -m pytest
-coverage html   # opens htmlcov/index.html
+## n8n Automation
+
+The local workflow is [`workflows/n8n/n8n_workflow_FINAL_LOCAL.json`](workflows/n8n/n8n_workflow_FINAL_LOCAL.json). It calls the FastAPI bridge at `127.0.0.1:8502`, refreshes data, runs sentiment and predictions, and performs a paper-trading cycle. n8n and Node.js must be installed separately.
+
+Start both local services with:
+
+```powershell
+.\start_local_automation.bat
 ```
 
-Key test modules:
+Or start `python webhook_server.py` and `npx n8n` separately. In n8n, import the workflow JSON, execute it once manually, and activate its schedule only after reviewing the workflow. `launch_n8n.bat` adjusts n8n's outgoing-IP restriction so local HTTP requests can reach the bridge; use it only for trusted local workflows.
 
-* `tests/test_llm_agent.py` – verifies correct prompt formatting and mock LLM responses.  
-* `tests/test_risk_manager.py` – validates stop‑loss, position‑size, and VaR calculations.  
-* `tests/test_indicator_engine.py` – checks SMA/EMA, RSI, MACD outputs against known vectors.  
+FastAPI documentation is available at [http://localhost:8502/docs](http://localhost:8502/docs) while the bridge is running. The mobile launcher and ngrok flow expose the dashboard beyond localhost; use them only on trusted networks and do not publish private tunnel URLs.
 
----  
+## Repository Layout
 
-## Contribution Guide  
-
-We welcome contributions! Follow these steps:
-
-1. **Fork** the repository.  
-2. **Create a branch** for your feature or bug‑fix (`git checkout -b feature‑awesome‑logic`).  
-3. **Write tests** for any new functionality.  
-4. **Run linting & formatting** (`pre-commit run --all-files`).  
-5. **Submit a Pull Request** with a clear description and reference any related issue.  
-
-### Code Style  
-
-* **Black** (line length 100) – automatic formatting.  
-* **Flake8** – linting (ignore `E203`, `W503`).  
-* **Docstrings** – Google style, placed at module, class, and function level.  
-
----  
-
-## Roadmap  
-
-| Milestone | Target Date | Description |
-|-----------|-------------|-------------|
-| **v1.0 – Public Release** | 2026‑06‑15 | Stable paper‑trading engine, full documentation, CI/CD pipeline. |
-| **v1.1 – Broker Integration** | 2026‑08‑01 | Plug‑in for live trading with Alpaca / Interactive Brokers. |
-| **v2.0 – Multi‑Agent Collaboration** | 2027‑01‑01 | Support multiple LLM agents negotiating on a single portfolio. |
-| **v2.1 – Cloud Deployment** | 2027‑03‑15 | Docker + Kubernetes manifests, auto‑scaling on GCP/AWS. |
-
----  
-
-## Citing the Project  
-
-If you use TradeIQ in academic work or publications, please cite:
-
-```bibtex
-@software{tradeiq2026,
-  author       = {Poora, Your Name},
-  title        = {TradeIQ: An LLM‑Powered Paper Trading Portal},
-  year         = 2026,
-  month        = may,
-  url          = {https://github.com/your-username/tradeiq},
-  version      = {v1.0}
-}
+```text
+app.py, database.py, *.py     Dashboard, data, models, and service code
+data/raw/                     Optional local historical CSV inputs (ignored)
+workflows/n8n/                n8n workflow exports
+docs/                         Methodology, papers, and project notes
+docs/deliverables/            Project reports and presentations
+artifacts/figures/             Generated charts (ignored)
+local_only/                    Private files and local reference projects (ignored)
 ```
 
----  
+## Configuration and Safety
 
-## License  
+- Copy `.env.example` to `.env`; never commit `.env`, API keys, access tokens, or broker credentials.
+- `LIVE_MODE` defaults to `False`. This project is for analysis and paper trading by default, not financial advice.
+- Local SQLite databases, raw datasets, generated charts, logs, and installers are excluded by `.gitignore`.
+- Streamlit binds to `localhost` by default. `launch_mobile.bat` deliberately enables network access for its mobile workflow.
 
-This project is licensed under the **MIT License** – see the [LICENSE](LICENSE) file for details.  
+## Documentation
 
----  
+- [Methodology](docs/methodology.md)
+- [Project report](docs/TradeIQ_Project_Report.md)
+- [IEEE paper](docs/TradeIQ_IEEE_Paper.md)
+- [Project outcomes](docs/outcomes.md)
 
-## Acknowledgements  
+## Publish to GitHub
 
-* **OpenAI / Google Gemini** – for providing LLM APIs.  
-* **Streamlit** – for the rapid UI prototyping framework.  
-* **Hyperliquid‑trading‑agent** – inspiration for the agent‑risk‑indicator architecture.  
-* **VADER Sentiment** – for sentiment extraction from news headlines.  
+Review the files before staging. Raw datasets, credentials, local databases, generated charts, and private files are ignored, but check the staged list before committing:
 
----  
-
-### Happy Trading! 🚀  
-
-Feel free to open an issue, start a discussion, or contribute a pull request. Your feedback helps make TradeIQ better for everyone.  
+```powershell
+git status --short
+git add .
+git status --short
+git commit -m "Prepare TradeIQ project"
+git branch -M main
+git remote add origin https://github.com/<your-account>/<your-repository>.git
+git push -u origin main
+```

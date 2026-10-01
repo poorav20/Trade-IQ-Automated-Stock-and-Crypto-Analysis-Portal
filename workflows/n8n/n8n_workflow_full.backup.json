@@ -1,0 +1,349 @@
+{
+  "name": "TradeIQ — Full Auto-Trading Pipeline",
+  "nodes": [
+
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "seconds", "secondsInterval": 30 }]
+        }
+      },
+      "id": "trigger-30s",
+      "name": "⏰ Every 30 Seconds",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [60, 400],
+      "notes": "TradeIQ auto-trigger: runs full pipeline every 30 seconds"
+    },
+
+    {
+      "parameters": {
+        "url": "https://query1.finance.yahoo.com/v8/finance/chart/RELIANCE.NS?interval=1d&range=5d",
+        "options": { "timeout": 10000 }
+      },
+      "id": "yahoo-reliance",
+      "name": "Yahoo: RELIANCE.NS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [280, 140]
+    },
+    {
+      "parameters": {
+        "url": "https://query1.finance.yahoo.com/v8/finance/chart/TCS.NS?interval=1d&range=5d",
+        "options": { "timeout": 10000 }
+      },
+      "id": "yahoo-tcs",
+      "name": "Yahoo: TCS.NS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [280, 240]
+    },
+    {
+      "parameters": {
+        "url": "https://query1.finance.yahoo.com/v8/finance/chart/INFY.NS?interval=1d&range=5d",
+        "options": { "timeout": 10000 }
+      },
+      "id": "yahoo-infy",
+      "name": "Yahoo: INFY.NS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [280, 340]
+    },
+    {
+      "parameters": {
+        "url": "https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=1d&range=5d",
+        "options": { "timeout": 10000 }
+      },
+      "id": "yahoo-aapl",
+      "name": "Yahoo: AAPL",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [280, 440]
+    },
+    {
+      "parameters": {
+        "url": "https://query1.finance.yahoo.com/v8/finance/chart/MSFT?interval=1d&range=5d",
+        "options": { "timeout": 10000 }
+      },
+      "id": "yahoo-msft",
+      "name": "Yahoo: MSFT",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [280, 540]
+    },
+    {
+      "parameters": {
+        "url": "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,binancecoin,solana&vs_currencies=usd&include_24hr_change=true&include_market_cap=true",
+        "options": { "timeout": 10000 }
+      },
+      "id": "coingecko",
+      "name": "CoinGecko: Crypto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [280, 640]
+    },
+
+    {
+      "parameters": {
+        "jsCode": "// ── Parse + normalise all Yahoo Finance responses ──────────────────────\nconst items = [];\nfor (const item of $input.all()) {\n  try {\n    const result = item.json.chart.result[0];\n    const meta   = result.meta;\n    const quote  = result.indicators.quote[0];\n    const idx    = quote.close.length - 1;\n    items.push({\n      ticker:    meta.symbol,\n      date:      new Date().toISOString().slice(0, 10),\n      open:      quote.open[idx],\n      high:      quote.high[idx],\n      low:       quote.low[idx],\n      close:     quote.close[idx],\n      volume:    quote.volume[idx],\n      currency:  meta.currency,\n      source:    'yahoo',\n      timestamp: new Date().toISOString()\n    });\n  } catch(e) { /* skip malformed */ }\n}\nconsole.log(`[TradeIQ] Parsed ${items.length} Yahoo records`);\nreturn items;"
+      },
+      "id": "parse-yahoo",
+      "name": "Parse Yahoo Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Parse CoinGecko response ─────────────────────────────────────────────\nconst data = $input.first().json;\nconst coinMap = {\n  bitcoin:     'BTC-USD',\n  ethereum:    'ETH-USD',\n  binancecoin: 'BNB-USD',\n  solana:      'SOL-USD'\n};\nconst items = [];\nfor (const [id, ticker] of Object.entries(coinMap)) {\n  if (!data[id]) continue;\n  items.push({\n    ticker,\n    date:       new Date().toISOString().slice(0, 10),\n    close:      data[id].usd,\n    change_24h: data[id].usd_24h_change,\n    market_cap: data[id].usd_market_cap,\n    source:     'coingecko',\n    timestamp:  new Date().toISOString()\n  });\n}\nconsole.log(`[TradeIQ] Parsed ${items.length} crypto records`);\nreturn items;"
+      },
+      "id": "parse-crypto",
+      "name": "Parse Crypto Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, 640]
+    },
+
+    {
+      "parameters": {
+        "url": "https://news.google.com/rss/search?q=RELIANCE+INDUSTRIES+TCS+INFOSYS+stock+India&hl=en-IN&gl=IN&ceid=IN:en",
+        "options": { "timeout": 10000 }
+      },
+      "id": "news-india",
+      "name": "News: India Stocks",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [760, 180]
+    },
+    {
+      "parameters": {
+        "url": "https://news.google.com/rss/search?q=Apple+Microsoft+AAPL+MSFT+stock&hl=en&gl=US&ceid=US:en",
+        "options": { "timeout": 10000 }
+      },
+      "id": "news-us",
+      "name": "News: US Stocks",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [760, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://news.google.com/rss/search?q=Bitcoin+Ethereum+crypto+price&hl=en&gl=US&ceid=US:en",
+        "options": { "timeout": 10000 }
+      },
+      "id": "news-crypto",
+      "name": "News: Crypto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [760, 420]
+    },
+
+    {
+      "parameters": {
+        "jsCode": "// ── In-workflow VADER-like sentiment scoring ──────────────────────────────\n// Fast approximate scoring using keyword lists (full VADER runs in Python)\nconst POSITIVE = ['surge','soar','gain','profit','beats','record','bullish','rises','rally','growth','buy','upgrade','strong','positive','higher','beat','dividend','expand'];\nconst NEGATIVE = ['fall','crash','loss','drop','bearish','decline','plunge','sell','downgrade','weak','miss','sue','fraud','warn','lower','cut','volatile','risk'];\n\nconst allItems = $input.all();\nconst results = [];\nconst headlines = [];\n\nfor (const item of allItems) {\n  // Try to parse RSS XML text\n  const text = typeof item.json === 'string' ? item.json : JSON.stringify(item.json);\n  // Extract titles from the RSS body\n  const titleMatches = text.match(/<title><![\\[\\]!CDATA]*([^<]+)/g) || [];\n  \n  for (const match of titleMatches.slice(0, 10)) {\n    const headline = match.replace(/<[^>]+>/g, '').replace('CDATA[', '').trim();\n    if (headline.length < 5) continue;\n    \n    const lower = headline.toLowerCase();\n    let score = 0;\n    POSITIVE.forEach(w => { if (lower.includes(w)) score += 0.1; });\n    NEGATIVE.forEach(w => { if (lower.includes(w)) score -= 0.1; });\n    score = Math.max(-1, Math.min(1, score));\n    \n    headlines.push({ headline, score });\n  }\n}\n\n// Aggregate overall market sentiment\nconst avgScore = headlines.length > 0\n  ? headlines.reduce((s, h) => s + h.score, 0) / headlines.length\n  : 0;\n\nconst label = avgScore > 0.05 ? 'Bullish 📈' : (avgScore < -0.05 ? 'Bearish 📉' : 'Neutral ➡️');\n\nconsole.log(`[TradeIQ] News sentiment: ${label} (${avgScore.toFixed(3)}) from ${headlines.length} headlines`);\n\nreturn [{\n  market_sentiment_score: parseFloat(avgScore.toFixed(4)),\n  market_sentiment_label: label,\n  headline_count: headlines.length,\n  top_headlines: headlines.slice(0, 5),\n  timestamp: new Date().toISOString()\n}];"
+      },
+      "id": "sentiment-score",
+      "name": "VADER Sentiment Score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1000, 300]
+    },
+
+    {
+      "parameters": {
+        "url": "http://localhost:8502/webhook/sentiment",
+        "method": "POST",
+        "options": { "timeout": 60000, "ignore4xxStatusCode": true }
+      },
+      "id": "python-sentiment",
+      "name": "Python: Full VADER + DB Save",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1220, 180],
+      "notes": "Triggers Python VADER sentiment and saves to SQLite DB"
+    },
+
+    {
+      "parameters": {
+        "url": "http://localhost:8502/webhook/predict",
+        "method": "POST",
+        "options": { "timeout": 120000, "ignore4xxStatusCode": true }
+      },
+      "id": "python-predict",
+      "name": "Python: ML Ensemble Predict",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1220, 360],
+      "notes": "Runs LinearRegression + GradientBoosting + MLP ensemble with sentiment fusion"
+    },
+
+    {
+      "parameters": {
+        "jsCode": "// ── Signal Router: Filter BUY/SELL/HOLD signals ──────────────────────────\nconst predResult  = $('Python: ML Ensemble Predict').first().json;\nconst sentResult  = $('VADER Sentiment Score').first().json;\n\nconst signals   = predResult.signals || [];\nconst mktSent   = sentResult.market_sentiment_score || 0;\n\nconst buySignals  = [];\nconst sellSignals = [];\nconst holdSignals = [];\nconst tradeAlerts = [];\n\nfor (const s of signals) {\n  const row = {\n    ticker:          s.ticker,\n    signal:          s.signal,\n    confidence:      s.confidence,\n    change_pct:      s.change_pct,\n    last_price:      s.last_price,\n    predicted_price: s.predicted_price,\n    rsi:             s.rsi,\n    ind_signal:      s.ind_signal,\n    ind_score:       s.ind_score,\n    market_sentiment: mktSent,\n  };\n\n  if (s.signal === 'BUY' && s.confidence >= 0.35) {\n    buySignals.push(row);\n    tradeAlerts.push({ ...row, action: 'BUY 🟢', emoji: '🟢' });\n  } else if (s.signal === 'SELL') {\n    sellSignals.push(row);\n    tradeAlerts.push({ ...row, action: 'SELL 🔴', emoji: '🔴' });\n  } else {\n    holdSignals.push(row);\n  }\n}\n\nconsole.log(`[Signal Router] BUY:${buySignals.length} SELL:${sellSignals.length} HOLD:${holdSignals.length}`);\n\nreturn [{\n  buy_count:    buySignals.length,\n  sell_count:   sellSignals.length,\n  hold_count:   holdSignals.length,\n  total:        signals.length,\n  buy_signals:  buySignals,\n  sell_signals: sellSignals,\n  trade_alerts: tradeAlerts,\n  market_sentiment: mktSent,\n  timestamp: new Date().toISOString()\n}];"
+      },
+      "id": "signal-router",
+      "name": "Signal Router",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1460, 300]
+    },
+
+    {
+      "parameters": {
+        "url": "http://localhost:8502/webhook/run-cycle",
+        "method": "POST",
+        "options": { "timeout": 180000, "ignore4xxStatusCode": true }
+      },
+      "id": "execute-trades",
+      "name": "Execute Trades (BUY/SELL Agents)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1700, 300],
+      "notes": "Runs auto_trader.run_trading_cycle() — paper mode. BUY Agent + SELL Agent + Stop-Loss + Take-Profit"
+    },
+
+    {
+      "parameters": {
+        "url": "http://localhost:8502/webhook/status",
+        "options": { "timeout": 15000, "ignore4xxStatusCode": true }
+      },
+      "id": "portfolio-status",
+      "name": "Portfolio Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1940, 300],
+      "notes": "Fetch updated portfolio: cash, open positions, unrealised P&L"
+    },
+
+    {
+      "parameters": {
+        "jsCode": "// ── Build Telegram alert message ─────────────────────────────────────────\nconst cycleResult   = $('Execute Trades (BUY/SELL Agents)').first().json;\nconst signalResult  = $('Signal Router').first().json;\nconst portfolioData = $('Portfolio Status').first().json;\n\nconst summary  = cycleResult.summary || {};\nconst cash     = portfolioData.cash || 0;\nconst openPos  = (portfolioData.open_positions || []).length;\nconst mktSent  = signalResult.market_sentiment || 0;\nconst sentLabel = mktSent > 0.05 ? 'Bullish 📈' : (mktSent < -0.05 ? 'Bearish 📉' : 'Neutral ➡️');\n\nconst ts = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });\n\nlet msg = `🤖 *TradeIQ Auto-Trader Report*\\n`;\nmsg += `🕐 ${ts} IST\\n\\n`;\nmsg += `📊 *Market Sentiment:* ${sentLabel} (${mktSent.toFixed(3)})\\n`;\nmsg += `💰 *Portfolio Cash:* ₹${cash.toLocaleString('en-IN')}\\n`;\nmsg += `📂 *Open Positions:* ${openPos}\\n\\n`;\nmsg += `✅ *BUY signals:* ${signalResult.buy_count}\\n`;\nmsg += `❌ *SELL signals:* ${signalResult.sell_count}\\n`;\nmsg += `➡️ *HOLD:* ${signalResult.hold_count}\\n\\n`;\nmsg += `📈 *Trades this cycle:* Buys=${summary.buys || 0}, Sells=${summary.sells || 0}, Skipped=${summary.skipped || 0}\\n\\n`;\n\n// Top trade alerts\nconst alerts = signalResult.trade_alerts || [];\nif (alerts.length > 0) {\n  msg += `🚨 *Active Signals:*\\n`;\n  for (const a of alerts.slice(0, 5)) {\n    msg += `${a.emoji} ${a.ticker}: ${a.action} @ ₹${(a.last_price||0).toFixed(2)} (Conf: ${((a.confidence||0)*100).toFixed(0)}%)`;\n    msg += ` | Δ${(a.change_pct||0).toFixed(2)}%\\n`;\n  }\n}\n\nconsole.log('[TradeIQ] Telegram message prepared');\nreturn [{ message: msg }];"
+      },
+      "id": "build-telegram-msg",
+      "name": "Build Telegram Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2180, 180]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $vars.TELEGRAM_CHAT_ID || 'YOUR_CHAT_ID' }}",
+        "text": "={{ $json.message }}",
+        "additionalFields": { "parse_mode": "Markdown" }
+      },
+      "id": "telegram-alert",
+      "name": "Telegram Alert",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [2420, 180],
+      "disabled": false,
+      "notes": "Set TELEGRAM_CHAT_ID variable and Telegram Bot API credential in n8n settings"
+    },
+
+    {
+      "parameters": {
+        "jsCode": "// ── Prepare Google Sheets row ─────────────────────────────────────────────\nconst cycleResult   = $('Execute Trades (BUY/SELL Agents)').first().json;\nconst signalResult  = $('Signal Router').first().json;\nconst portfolioData = $('Portfolio Status').first().json;\n\nconst summary = cycleResult.summary || {};\nconst cash    = portfolioData.cash || 0;\nconst openPos = (portfolioData.open_positions || []).length;\nconst ts      = new Date().toISOString();\n\n// One row per cycle\nreturn [{\n  timestamp:       ts,\n  cash:            cash,\n  open_positions:  openPos,\n  buys:            summary.buys || 0,\n  sells:           summary.sells || 0,\n  skipped:         summary.skipped || 0,\n  buy_signals:     signalResult.buy_count || 0,\n  sell_signals:    signalResult.sell_count || 0,\n  hold_signals:    signalResult.hold_count || 0,\n  market_sentiment: signalResult.market_sentiment || 0,\n}];"
+      },
+      "id": "build-sheets-row",
+      "name": "Build Sheets Row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2180, 420]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": { "__rl": true, "mode": "id", "value": "={{ $vars.GOOGLE_SHEET_ID || 'YOUR_SHEET_ID' }}" },
+        "sheetName": { "__rl": true, "mode": "name", "value": "TradeLog" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp":        "={{ $json.timestamp }}",
+            "Cash":             "={{ $json.cash }}",
+            "Open Positions":   "={{ $json.open_positions }}",
+            "Buys":             "={{ $json.buys }}",
+            "Sells":            "={{ $json.sells }}",
+            "Skipped":          "={{ $json.skipped }}",
+            "Buy Signals":      "={{ $json.buy_signals }}",
+            "Sell Signals":     "={{ $json.sell_signals }}",
+            "Hold Signals":     "={{ $json.hold_signals }}",
+            "Market Sentiment": "={{ $json.market_sentiment }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "google-sheets-log",
+      "name": "Google Sheets Log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [2420, 420],
+      "disabled": false,
+      "notes": "Set GOOGLE_SHEET_ID variable and Google Sheets OAuth2 credential in n8n settings"
+    }
+
+  ],
+
+  "connections": {
+    "⏰ Every 30 Seconds": {
+      "main": [[
+        { "node": "Yahoo: RELIANCE.NS", "type": "main", "index": 0 },
+        { "node": "Yahoo: TCS.NS",      "type": "main", "index": 0 },
+        { "node": "Yahoo: INFY.NS",     "type": "main", "index": 0 },
+        { "node": "Yahoo: AAPL",        "type": "main", "index": 0 },
+        { "node": "Yahoo: MSFT",        "type": "main", "index": 0 },
+        { "node": "CoinGecko: Crypto",  "type": "main", "index": 0 }
+      ]]
+    },
+    "Yahoo: RELIANCE.NS": { "main": [[{ "node": "Parse Yahoo Data", "type": "main", "index": 0 }]] },
+    "Yahoo: TCS.NS":      { "main": [[{ "node": "Parse Yahoo Data", "type": "main", "index": 0 }]] },
+    "Yahoo: INFY.NS":     { "main": [[{ "node": "Parse Yahoo Data", "type": "main", "index": 0 }]] },
+    "Yahoo: AAPL":        { "main": [[{ "node": "Parse Yahoo Data", "type": "main", "index": 0 }]] },
+    "Yahoo: MSFT":        { "main": [[{ "node": "Parse Yahoo Data", "type": "main", "index": 0 }]] },
+    "CoinGecko: Crypto":  { "main": [[{ "node": "Parse Crypto Data", "type": "main", "index": 0 }]] },
+
+    "Parse Yahoo Data":  { "main": [[{ "node": "News: India Stocks", "type": "main", "index": 0 }, { "node": "News: US Stocks", "type": "main", "index": 0 }]] },
+    "Parse Crypto Data": { "main": [[{ "node": "News: Crypto",       "type": "main", "index": 0 }]] },
+
+    "News: India Stocks": { "main": [[{ "node": "VADER Sentiment Score", "type": "main", "index": 0 }]] },
+    "News: US Stocks":    { "main": [[{ "node": "VADER Sentiment Score", "type": "main", "index": 0 }]] },
+    "News: Crypto":       { "main": [[{ "node": "VADER Sentiment Score", "type": "main", "index": 0 }]] },
+
+    "VADER Sentiment Score": {
+      "main": [[
+        { "node": "Python: Full VADER + DB Save", "type": "main", "index": 0 },
+        { "node": "Python: ML Ensemble Predict",  "type": "main", "index": 0 }
+      ]]
+    },
+
+    "Python: Full VADER + DB Save": { "main": [[{ "node": "Signal Router", "type": "main", "index": 0 }]] },
+    "Python: ML Ensemble Predict":  { "main": [[{ "node": "Signal Router", "type": "main", "index": 0 }]] },
+
+    "Signal Router": { "main": [[{ "node": "Execute Trades (BUY/SELL Agents)", "type": "main", "index": 0 }]] },
+
+    "Execute Trades (BUY/SELL Agents)": { "main": [[{ "node": "Portfolio Status", "type": "main", "index": 0 }]] },
+
+    "Portfolio Status": {
+      "main": [[
+        { "node": "Build Telegram Message", "type": "main", "index": 0 },
+        { "node": "Build Sheets Row",       "type": "main", "index": 0 }
+      ]]
+    },
+
+    "Build Telegram Message": { "main": [[{ "node": "Telegram Alert",      "type": "main", "index": 0 }]] },
+    "Build Sheets Row":       { "main": [[{ "node": "Google Sheets Log",   "type": "main", "index": 0 }]] }
+  },
+
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "tradeiq-auto-trader-v2"
+  }
+}

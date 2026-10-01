@@ -20,6 +20,7 @@ from datetime import datetime, timezone
 
 # ── Paths ──────────────────────────────────────────────────────────────
 BASE_DIR = os.path.dirname(__file__)
+DATA_DIR = os.path.join(BASE_DIR, "data", "raw")
 DB_PATH  = os.path.join(BASE_DIR, "trading.db")
 
 # ── Ticker name overrides for known files ──────────────────────────────
@@ -287,10 +288,10 @@ def main():
     print("\n[STEP 1] Loading CSV datasets into database...\n")
     total_rows = 0
 
-    csv_files = sorted(f for f in os.listdir(BASE_DIR) if f.endswith(".csv"))
+    csv_files = sorted(f for f in os.listdir(DATA_DIR) if f.endswith(".csv"))
 
     for fname in csv_files:
-        fpath = os.path.join(BASE_DIR, fname)
+        fpath = os.path.join(DATA_DIR, fname)
 
         # Special handler for Training_data.csv
         if fname == "Training_data.csv":
