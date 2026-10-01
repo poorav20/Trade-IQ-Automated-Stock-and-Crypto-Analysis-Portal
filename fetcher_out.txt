@@ -1,0 +1,36 @@
+[OK] Database initialised at: F:\AI Agents\trading-portal\trading.db
+📡  Fetching 90d of data for 14 tickers …
+💱  Using USD/INR conversion rate: ₹94.76
+  ✅  RELIANCE.NS     — 90 rows saved
+  ✅  TCS.NS          — 90 rows saved
+  ✅  INFY.NS         — 90 rows saved
+  ✅  HDFCBANK.NS     — 90 rows saved
+  ✅  ICICIBANK.NS    — 90 rows saved
+  ✅  AAPL            — 90 rows saved
+  ✅  MSFT            — 90 rows saved
+  ✅  GOOGL           — 90 rows saved
+  ✅  AMZN            — 90 rows saved
+  ✅  NVDA            — 90 rows saved
+  ✅  BTC-USD         — 90 rows saved
+  ✅  ETH-USD         — 90 rows saved
+  ✅  BNB-USD         — 90 rows saved
+  ✅  SOL-USD         — 90 rows saved
+
+🎉  Done! Total rows saved/updated: 1260
+
+--- Live Quotes ---
+      ticker        price  change_pct   market_cap currency
+ RELIANCE.NS 1.348100e+03   -4.647056 1.824313e+13      INR
+      TCS.NS 2.389800e+03    0.411767 8.646506e+12      INR
+     INFY.NS 1.269700e+03   -0.765928 5.137977e+12      INR
+ HDFCBANK.NS 7.562000e+02   -3.063705 1.164041e+13      INR
+ICICIBANK.NS 1.233800e+03   -1.986018 8.833807e+12      INR
+        AAPL 2.357554e+04   -2.390528 3.465116e+14      INR
+        MSFT 3.380646e+04   -2.760973 2.512623e+14      INR
+       GOOGL 2.599564e+04   -2.671446 3.144692e+14      INR
+        AMZN 1.888886e+04   -4.181890 2.027704e+14      INR
+        NVDA 1.587369e+04   -2.762942 3.858101e+14      INR
+     BTC-USD 6.294199e+06    0.151446          NaN      INR
+     ETH-USD 1.891293e+05    0.160194          NaN      INR
+     BNB-USD 5.777546e+04   -0.167103          NaN      INR
+     SOL-USD 7.742988e+03   -0.368973          NaN      INR

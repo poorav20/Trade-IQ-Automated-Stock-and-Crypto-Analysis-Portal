@@ -1,0 +1,425 @@
+{
+  "name": "TradeIQ Full Auto-Trading Pipeline - Improved Cloud",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      },
+      "id": "schedule-every-5-min",
+      "name": "Every 5 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        120,
+        300
+      ],
+      "notes": "Improved from n8n_workflow_full.json. Runs the full cloud-safe TradeIQ pipeline every 5 minutes."
+    },
+    {
+      "parameters": {
+        "url": "={{ ($vars.TRADEIQ_BRIDGE_URL || '').replace(/\\/$/, '') + '/' }}",
+        "options": {
+          "timeout": 10000,
+          "ignore4xxStatusCode": true
+        }
+      },
+      "id": "bridge-health",
+      "name": "Bridge Health Check",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        340,
+        300
+      ],
+      "notes": "Requires n8n variable TRADEIQ_BRIDGE_URL, for example https://abc-123.ngrok-free.app"
+    },
+    {
+      "parameters": {
+        "url": "={{ ($vars.TRADEIQ_BRIDGE_URL || '').replace(/\\/$/, '') + '/webhook/fetch-data' }}",
+        "method": "POST",
+        "options": {
+          "timeout": 180000,
+          "ignore4xxStatusCode": true
+        }
+      },
+      "id": "fetch-market-data",
+      "name": "Fetch Market Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        560,
+        300
+      ],
+      "notes": "Calls data_fetcher.fetch_and_store() through the public bridge and saves yfinance data into trading.db."
+    },
+    {
+      "parameters": {
+        "url": "={{ ($vars.TRADEIQ_BRIDGE_URL || '').replace(/\\/$/, '') + '/webhook/sentiment' }}",
+        "method": "POST",
+        "options": {
+          "timeout": 180000,
+          "ignore4xxStatusCode": true
+        }
+      },
+      "id": "run-sentiment",
+      "name": "Run Sentiment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        780,
+        200
+      ],
+      "notes": "Scores Google News RSS sentiment and saves rows in the local SQLite DB."
+    },
+    {
+      "parameters": {
+        "url": "={{ ($vars.TRADEIQ_BRIDGE_URL || '').replace(/\\/$/, '') + '/webhook/predict' }}",
+        "method": "POST",
+        "options": {
+          "timeout": 240000,
+          "ignore4xxStatusCode": true
+        }
+      },
+      "id": "run-ml-predictions",
+      "name": "Run ML Predictions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        780,
+        400
+      ],
+      "notes": "Runs ensemble ML predictions and saves latest BUY/SELL/HOLD signals."
+    },
+    {
+      "parameters": {
+        "url": "={{ ($vars.TRADEIQ_BRIDGE_URL || '').replace(/\\/$/, '') + '/webhook/signals' }}",
+        "options": {
+          "timeout": 30000,
+          "ignore4xxStatusCode": true
+        }
+      },
+      "id": "load-latest-signals",
+      "name": "Load Latest Signals",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1000,
+        300
+      ],
+      "notes": "Reads latest saved signals from ml_predictions."
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.first().json;\nconst signals = result.signals || [];\nconst buys = [];\nconst sells = [];\nconst holds = [];\n\nfor (const signal of signals) {\n  const row = {\n    ticker: signal.ticker,\n    signal: signal.signal,\n    confidence: Number(signal.confidence || 0),\n    predicted_price: Number(signal.predicted_price || 0),\n    predicted_date: signal.predicted_date,\n    created_at: signal.created_at\n  };\n\n  if (row.signal === 'BUY') buys.push(row);\n  else if (row.signal === 'SELL') sells.push(row);\n  else holds.push(row);\n}\n\nbuys.sort((a, b) => b.confidence - a.confidence);\nsells.sort((a, b) => b.confidence - a.confidence);\n\nreturn [{\n  status: result.status || 'unknown',\n  total: signals.length,\n  buy_count: buys.length,\n  sell_count: sells.length,\n  hold_count: holds.length,\n  top_buys: buys.slice(0, 5),\n  top_sells: sells.slice(0, 5),\n  timestamp: new Date().toISOString()\n}];"
+      },
+      "id": "route-signals",
+      "name": "Route Signals",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1220,
+        300
+      ],
+      "notes": "Groups latest signals for reporting and downstream notification."
+    },
+    {
+      "parameters": {
+        "url": "={{ ($vars.TRADEIQ_BRIDGE_URL || '').replace(/\\/$/, '') + '/webhook/run-cycle' }}",
+        "method": "POST",
+        "options": {
+          "timeout": 240000,
+          "ignore4xxStatusCode": true
+        }
+      },
+      "id": "execute-paper-trades",
+      "name": "Execute Paper Trades",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1440,
+        300
+      ],
+      "notes": "Runs BUY/SELL agents with risk controls in paper mode."
+    },
+    {
+      "parameters": {
+        "url": "={{ ($vars.TRADEIQ_BRIDGE_URL || '').replace(/\\/$/, '') + '/webhook/status' }}",
+        "options": {
+          "timeout": 30000,
+          "ignore4xxStatusCode": true
+        }
+      },
+      "id": "portfolio-status",
+      "name": "Portfolio Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1660,
+        300
+      ],
+      "notes": "Reads cash, starting balance, open positions, and recent trades."
+    },
+    {
+      "parameters": {
+        "jsCode": "const signalReport = $('Route Signals').first().json;\nconst tradeResult = $('Execute Paper Trades').first().json;\nconst portfolio = $input.first().json;\nconst summary = tradeResult.summary || {};\nconst ts = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });\nconst cash = Number(portfolio.cash || 0);\nconst starting = Number(portfolio.starting || 100000);\nconst pnl = cash - starting;\nconst pnlPct = starting ? (pnl / starting) * 100 : 0;\n\nconst lines = [];\nlines.push('TradeIQ Auto-Trader Report');\nlines.push(`${ts} IST`);\nlines.push('');\nlines.push(`Cash: INR ${cash.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`);\nlines.push(`Paper P&L: ${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)} (${pnlPct.toFixed(2)}%)`);\nlines.push(`Open positions: ${(portfolio.open_positions || []).length}`);\nlines.push('');\nlines.push(`Signals: BUY ${signalReport.buy_count}, SELL ${signalReport.sell_count}, HOLD ${signalReport.hold_count}`);\nlines.push(`Trades this cycle: Buys ${summary.buys || 0}, Sells ${summary.sells || 0}, Skipped ${summary.skipped || 0}`);\n\nif ((signalReport.top_buys || []).length) {\n  lines.push('');\n  lines.push('Top BUY signals:');\n  for (const s of signalReport.top_buys) {\n    lines.push(`${s.ticker}: confidence ${(s.confidence * 100).toFixed(0)}%, target ${s.predicted_price.toFixed(2)}`);\n  }\n}\n\nif ((signalReport.top_sells || []).length) {\n  lines.push('');\n  lines.push('Top SELL signals:');\n  for (const s of signalReport.top_sells) {\n    lines.push(`${s.ticker}: confidence ${(s.confidence * 100).toFixed(0)}%, target ${s.predicted_price.toFixed(2)}`);\n  }\n}\n\nreturn [{\n  timestamp: new Date().toISOString(),\n  message: lines.join('\\n'),\n  cash,\n  starting,\n  pnl,\n  pnl_pct: pnlPct,\n  open_positions: (portfolio.open_positions || []).length,\n  recent_trades: portfolio.recent_trades || [],\n  signal_report: signalReport,\n  trade_summary: summary\n}];"
+      },
+      "id": "build-cycle-report",
+      "name": "Build Cycle Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1880,
+        300
+      ],
+      "notes": "Final output. Add Telegram, Email, Discord, or Google Sheets nodes after this node."
+    },
+    {
+      "parameters": {
+        "jsCode": "const report = $('Build Cycle Report').first().json;\nconst signalReport = report.signal_report || {};\nconst tradeSummary = report.trade_summary || {};\nconst topBuys = signalReport.top_buys || [];\nconst topSells = signalReport.top_sells || [];\n\nconst lines = [];\nlines.push('*TradeIQ Auto-Trader Report*');\nlines.push(`Time: ${new Date(report.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST`);\nlines.push('');\nlines.push(`Cash: INR ${Number(report.cash || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`);\nlines.push(`Paper P&L: ${Number(report.pnl || 0).toFixed(2)} (${Number(report.pnl_pct || 0).toFixed(2)}%)`);\nlines.push(`Open Positions: ${report.open_positions || 0}`);\nlines.push('');\nlines.push(`Signals: BUY ${signalReport.buy_count || 0}, SELL ${signalReport.sell_count || 0}, HOLD ${signalReport.hold_count || 0}`);\nlines.push(`Trades: Buys ${tradeSummary.buys || 0}, Sells ${tradeSummary.sells || 0}, Skipped ${tradeSummary.skipped || 0}`);\n\nif (topBuys.length) {\n  lines.push('');\n  lines.push('*Top BUY Signals*');\n  for (const s of topBuys.slice(0, 5)) {\n    lines.push(`${s.ticker}: ${((s.confidence || 0) * 100).toFixed(0)}% confidence, target ${Number(s.predicted_price || 0).toFixed(2)}`);\n  }\n}\n\nif (topSells.length) {\n  lines.push('');\n  lines.push('*Top SELL Signals*');\n  for (const s of topSells.slice(0, 5)) {\n    lines.push(`${s.ticker}: ${((s.confidence || 0) * 100).toFixed(0)}% confidence, target ${Number(s.predicted_price || 0).toFixed(2)}`);\n  }\n}\n\nreturn [{ message: lines.join('\\n') }];"
+      },
+      "id": "build-telegram-msg",
+      "name": "Build Telegram Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2100,
+        180
+      ],
+      "notes": "Formats the final report for Telegram Markdown. Connect to Telegram after adding credentials."
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $vars.TELEGRAM_CHAT_ID }}",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "telegram-alert",
+      "name": "Telegram Alert",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2320,
+        180
+      ],
+      "disabled": true,
+      "notes": "Disabled by default. Enable after setting TELEGRAM_CHAT_ID and Telegram Bot credentials."
+    },
+    {
+      "parameters": {
+        "jsCode": "const report = $('Build Cycle Report').first().json;\nconst signalReport = report.signal_report || {};\nconst tradeSummary = report.trade_summary || {};\nreturn [{\n  Timestamp: report.timestamp,\n  Cash: report.cash || 0,\n  Starting: report.starting || 0,\n  PnL: report.pnl || 0,\n  PnLPercent: report.pnl_pct || 0,\n  OpenPositions: report.open_positions || 0,\n  Buys: tradeSummary.buys || 0,\n  Sells: tradeSummary.sells || 0,\n  Skipped: tradeSummary.skipped || 0,\n  BuySignals: signalReport.buy_count || 0,\n  SellSignals: signalReport.sell_count || 0,\n  HoldSignals: signalReport.hold_count || 0,\n  Message: report.message || ''\n}];"
+      },
+      "id": "build-sheets-row",
+      "name": "Build Sheets Row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2100,
+        420
+      ],
+      "notes": "Builds a clean analytics row for Google Sheets."
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $vars.GOOGLE_SHEET_ID }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "TradeLog"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $json.Timestamp }}",
+            "Cash": "={{ $json.Cash }}",
+            "Starting": "={{ $json.Starting }}",
+            "PnL": "={{ $json.PnL }}",
+            "PnL %": "={{ $json.PnLPercent }}",
+            "Open Positions": "={{ $json.OpenPositions }}",
+            "Buys": "={{ $json.Buys }}",
+            "Sells": "={{ $json.Sells }}",
+            "Skipped": "={{ $json.Skipped }}",
+            "Buy Signals": "={{ $json.BuySignals }}",
+            "Sell Signals": "={{ $json.SellSignals }}",
+            "Hold Signals": "={{ $json.HoldSignals }}",
+            "Message": "={{ $json.Message }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "google-sheets-log",
+      "name": "Google Sheets Log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        2320,
+        420
+      ],
+      "disabled": true,
+      "notes": "Disabled by default. Enable after setting GOOGLE_SHEET_ID and Google Sheets credentials."
+    }
+  ],
+  "connections": {
+    "Every 5 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Bridge Health Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bridge Health Check": {
+      "main": [
+        [
+          {
+            "node": "Fetch Market Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Market Data": {
+      "main": [
+        [
+          {
+            "node": "Run Sentiment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Sentiment": {
+      "main": [
+        [
+          {
+            "node": "Run ML Predictions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run ML Predictions": {
+      "main": [
+        [
+          {
+            "node": "Load Latest Signals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Latest Signals": {
+      "main": [
+        [
+          {
+            "node": "Route Signals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Signals": {
+      "main": [
+        [
+          {
+            "node": "Execute Paper Trades",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Paper Trades": {
+      "main": [
+        [
+          {
+            "node": "Portfolio Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Portfolio Status": {
+      "main": [
+        [
+          {
+            "node": "Build Cycle Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Cycle Report": {
+      "main": [
+        [
+          {
+            "node": "Build Telegram Message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build Sheets Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Telegram Message": {
+      "main": [
+        [
+          {
+            "node": "Telegram Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Sheets Row": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "tradeiq-full-improved-cloud"
+  }
+}

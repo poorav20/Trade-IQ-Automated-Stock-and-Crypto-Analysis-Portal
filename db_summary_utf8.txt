@@ -1,0 +1,38 @@
+﻿=== PRICE HISTORY BY TICKER ===
+  AAPL                  rows=   10558  from=1980-12-12  to=2026-02-27
+  MSFT                  rows=   10072  from=1986-03-13  to=2026-03-05
+  AMZN                  rows=    6245  from=1997-05-15  to=2026-02-27
+  TCS.NS                rows=    5300  from=2004-08-25  to=2026-02-27
+  NIFTY50               rows=    4970  from=2003-01-20  to=2023-01-13
+  INFY.NS               rows=     152  from=2025-04-04  to=2026-02-27
+  BNB-USD               rows=      90  from=2025-12-01  to=2026-02-28
+  BTC-USD               rows=      90  from=2025-12-01  to=2026-02-28
+  ETH-USD               rows=      90  from=2025-12-01  to=2026-02-28
+  GOOGL                 rows=      90  from=2025-10-20  to=2026-02-27
+  HDFCBANK.NS           rows=      90  from=2025-10-21  to=2026-02-27
+  ICICIBANK.NS          rows=      90  from=2025-10-21  to=2026-02-27
+  NVDA                  rows=      90  from=2025-10-20  to=2026-02-27
+  RELIANCE.NS           rows=      90  from=2025-10-21  to=2026-02-27
+  SOL-USD               rows=      90  from=2025-12-01  to=2026-02-28
+
+=== LATEST ML PREDICTIONS ===
+  SOL-USD               pred=       79.92  signal=SELL  conf=0.0  for=2026-03-29
+  BNB-USD               pred=      602.61  signal=HOLD  conf=0.0  for=2026-03-29
+  ETH-USD               pred=     1905.59  signal=BUY   conf=0.0  for=2026-03-29
+  BTC-USD               pred=    64888.21  signal=SELL  conf=0.0  for=2026-03-29
+  NVDA                  pred=      178.73  signal=BUY   conf=0.0  for=2026-03-29
+  AMZN                  pred=      259.19  signal=BUY   conf=0.0  for=2026-03-29
+  GOOGL                 pred=      311.28  signal=SELL  conf=0.0  for=2026-03-29
+  MSFT                  pred=      411.80  signal=SELL  conf=0.0  for=2026-03-29
+  AAPL                  pred=      267.93  signal=BUY   conf=0.0  for=2026-03-29
+  ICICIBANK.NS          pred=     1377.65  signal=BUY   conf=0.0  for=2026-03-29
+  HDFCBANK.NS           pred=      889.22  signal=BUY   conf=0.0  for=2026-03-29
+  INFY.NS               pred=     1300.11  signal=BUY   conf=0.0  for=2026-03-29
+  TCS.NS                pred=     2635.50  signal=HOLD  conf=0.0  for=2026-03-29
+  RELIANCE.NS           pred=     1395.13  signal=BUY   conf=0.0  for=2026-03-29
+  SOL-USD               pred=       79.92  signal=SELL  conf=0.0  for=2026-03-27
+  BNB-USD               pred=      602.61  signal=HOLD  conf=0.0  for=2026-03-27
+  ETH-USD               pred=     1905.59  signal=BUY   conf=0.0  for=2026-03-27
+  BTC-USD               pred=    64888.21  signal=SELL  conf=0.0  for=2026-03-27
+  NVDA                  pred=      178.73  signal=BUY   conf=0.0  for=2026-03-27
+  AMZN                  pred=      210.36  signal=SELL  conf=0.0  for=2026-03-27

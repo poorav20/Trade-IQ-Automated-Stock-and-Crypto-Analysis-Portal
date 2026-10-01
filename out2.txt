@@ -1,0 +1,188 @@
+F:\AI Agents\trading-portal\load_and_train.py:93: UserWarning: The argument 'infer_datetime_format' is deprecated and will be removed in a future version. A strict version of it is now the default, see https://pandas.pydata.org/pdeps/0004-consistent-to-datetime-parsing.html. You can safely remove this argument.
+  return pd.to_datetime(series, infer_datetime_format=True)
+F:\AI Agents\trading-portal\load_and_train.py:93: UserWarning: The argument 'infer_datetime_format' is deprecated and will be removed in a future version. A strict version of it is now the default, see https://pandas.pydata.org/pdeps/0004-consistent-to-datetime-parsing.html. You can safely remove this argument.
+  return pd.to_datetime(series, infer_datetime_format=True)
+F:\AI Agents\trading-portal\load_and_train.py:93: UserWarning: The argument 'infer_datetime_format' is deprecated and will be removed in a future version. A strict version of it is now the default, see https://pandas.pydata.org/pdeps/0004-consistent-to-datetime-parsing.html. You can safely remove this argument.
+  return pd.to_datetime(series, infer_datetime_format=True)
+F:\AI Agents\trading-portal\load_and_train.py:93: UserWarning: The argument 'infer_datetime_format' is deprecated and will be removed in a future version. A strict version of it is now the default, see https://pandas.pydata.org/pdeps/0004-consistent-to-datetime-parsing.html. You can safely remove this argument.
+  return pd.to_datetime(series, infer_datetime_format=True)
+F:\AI Agents\trading-portal\load_and_train.py:93: UserWarning: The argument 'infer_datetime_format' is deprecated and will be removed in a future version. A strict version of it is now the default, see https://pandas.pydata.org/pdeps/0004-consistent-to-datetime-parsing.html. You can safely remove this argument.
+  return pd.to_datetime(series, infer_datetime_format=True)
+C:\Users\poora\AppData\Roaming\Python\Python314\site-packages\sklearn\neural_network\_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (2000) reached and the optimization hasn't converged yet.
+  warnings.warn(
+C:\Users\poora\AppData\Roaming\Python\Python314\site-packages\sklearn\neural_network\_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (2000) reached and the optimization hasn't converged yet.
+  warnings.warn(
+C:\Users\poora\AppData\Roaming\Python\Python314\site-packages\sklearn\neural_network\_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (2000) reached and the optimization hasn't converged yet.
+  warnings.warn(
+C:\Users\poora\AppData\Roaming\Python\Python314\site-packages\sklearn\neural_network\_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (2000) reached and the optimization hasn't converged yet.
+  warnings.warn(
+C:\Users\poora\AppData\Roaming\Python\Python314\site-packages\sklearn\neural_network\_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (2000) reached and the optimization hasn't converged yet.
+  warnings.warn(
+C:\Users\poora\AppData\Roaming\Python\Python314\site-packages\sklearn\neural_network\_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (2000) reached and the optimization hasn't converged yet.
+  warnings.warn(
+C:\Users\poora\AppData\Roaming\Python\Python314\site-packages\sklearn\neural_network\_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (2000) reached and the optimization hasn't converged yet.
+  warnings.warn(
+C:\Users\poora\AppData\Roaming\Python\Python314\site-packages\sklearn\neural_network\_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (2000) reached and the optimization hasn't converged yet.
+  warnings.warn(
+C:\Users\poora\AppData\Roaming\Python\Python314\site-packages\sklearn\neural_network\_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (2000) reached and the optimization hasn't converged yet.
+  warnings.warn(
+C:\Users\poora\AppData\Roaming\Python\Python314\site-packages\sklearn\neural_network\_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (2000) reached and the optimization hasn't converged yet.
+  warnings.warn(
+C:\Users\poora\AppData\Roaming\Python\Python314\site-packages\sklearn\neural_network\_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (2000) reached and the optimization hasn't converged yet.
+  warnings.warn(
+C:\Users\poora\AppData\Roaming\Python\Python314\site-packages\sklearn\neural_network\_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (2000) reached and the optimization hasn't converged yet.
+  warnings.warn(
+C:\Users\poora\AppData\Roaming\Python\Python314\site-packages\sklearn\neural_network\_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (2000) reached and the optimization hasn't converged yet.
+  warnings.warn(
+C:\Users\poora\AppData\Roaming\Python\Python314\site-packages\sklearn\neural_network\_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (2000) reached and the optimization hasn't converged yet.
+  warnings.warn(
+C:\Users\poora\AppData\Roaming\Python\Python314\site-packages\sklearn\neural_network\_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (2000) reached and the optimization hasn't converged yet.
+  warnings.warn(
+C:\Users\poora\AppData\Roaming\Python\Python314\site-packages\sklearn\neural_network\_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (2000) reached and the optimization hasn't converged yet.
+  warnings.warn(
+C:\Users\poora\AppData\Roaming\Python\Python314\site-packages\sklearn\neural_network\_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (2000) reached and the optimization hasn't converged yet.
+  warnings.warn(
+C:\Users\poora\AppData\Roaming\Python\Python314\site-packages\sklearn\neural_network\_multilayer_perceptron.py:785: ConvergenceWarning: Stochastic Optimizer: Maximum iterations (2000) reached and the optimization hasn't converged yet.
+  warnings.warn(
+=================================================================
+  TRADEIQ — Dataset Loader & ML Trainer
+=================================================================
+[OK] Database initialised at: F:\AI Agents\trading-portal\trading.db
+
+[STEP 1] Loading CSV datasets into database...
+
+  >> 01-01-2021-TO-31-12-2021INFYALLN.csv  -> INFY.NS
+    [SKIP]  01-01-2021-TO-31-12-2021INFYALLN.csv: missing date/close columns
+     0 rows loaded
+  >> 15 Years Stock Data of NVDA AAPL MSFT GOOGL and AMZN.csv  -> (multi-ticker)
+     0 total rows loaded
+  >> AAPL.csv  -> AAPL
+     10468 rows loaded
+  >> Amazon.csv  -> AMZN
+     6155 rows loaded
+  >> INFY_15m.csv  -> INFY.NS
+     1548 rows loaded
+  >> MSFT(2000-2023).csv  -> MSFT
+     6012 rows loaded
+  >> MSFT_1986-03-13_2025-02-04.csv  -> MSFT
+     9800 rows loaded
+  >> MSFT_Stock_Data_1986_2026.csv  -> MSFT
+     10072 rows loaded
+  >> Microsoft_Stock.csv  -> MSFT
+     1511 rows loaded
+  >> RILO - Copy (1).csv  -> RELIANCE.NS
+    [SKIP]  RILO - Copy (1).csv: missing date/close columns
+     0 rows loaded
+  >> RILO - Copy.csv  -> RELIANCE.NS
+    [SKIP]  RILO - Copy.csv: missing date/close columns
+     0 rows loaded
+  >> Reliance Industries 1996 to 2020.csv  -> RELIANCE.NS
+    [SKIP]  Reliance Industries 1996 to 2020.csv: date parse failed → time data "15-01-1996" doesn't match format "%m-%d-%Y", at position 10. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+     0 rows loaded
+  >> TCS_NSE_2004-2025.csv  -> TCS.NS
+     5343 rows loaded
+  >> Training_data.csv  -> NIFTY50
+     4974 rows loaded
+  >> apple_stock.csv  -> AAPL
+    [SKIP]  apple_stock.csv: missing date/close columns
+     0 rows loaded
+  >> reliance_data.csv  -> RELIANCE.NS
+    [SKIP]  reliance_data.csv: date parse failed → time data "15-01-1996" doesn't match format "%m-%d-%Y", at position 10. You might want to try:
+    - passing `format` if your strings have a consistent format;
+    - passing `format='ISO8601'` if your strings are all ISO8601 but not necessarily in exactly the same format;
+    - passing `format='mixed'`, and the format will be inferred for each element individually. You might want to use `dayfirst` alongside this.
+     0 rows loaded
+
+  Total rows loaded: 55,883
+
+[STEP 2] Database summary by ticker:
+
+      ticker  rows   earliest     latest
+        AAPL 10578 1980-12-12 2026-03-27
+        MSFT 10088 1986-03-13 2026-03-27
+        AMZN  6265 1997-05-15 2026-03-27
+      TCS.NS  5318 2004-08-25 2026-03-27
+     NIFTY50  4970 2003-01-20 2023-01-13
+     INFY.NS   170 2025-04-04 2026-03-27
+     BNB-USD   117 2025-12-01 2026-03-28
+     BTC-USD   117 2025-12-01 2026-03-28
+     ETH-USD   117 2025-12-01 2026-03-28
+     SOL-USD   117 2025-12-01 2026-03-28
+       GOOGL   110 2025-10-20 2026-03-27
+        NVDA   110 2025-10-20 2026-03-27
+ HDFCBANK.NS   108 2025-10-21 2026-03-27
+ICICIBANK.NS   108 2025-10-21 2026-03-27
+ RELIANCE.NS   108 2025-10-21 2026-03-27
+
+=================================================================
+[STEP 3] Training IEEE-enhanced Ensemble ML models...
+
+  [ML v2] RELIANCE.NS ...
+  [ML v2] TCS.NS ...
+  [ML v2] INFY.NS ...
+  [ML v2] HDFCBANK.NS ...
+  [ML v2] ICICIBANK.NS ...
+  [ML v2] AAPL ...
+  [ML v2] MSFT ...
+  [ML v2] GOOGL ...
+  [ML v2] AMZN ...
+  [ML v2] NVDA ...
+  [ML v2] BTC-USD ...
+  [ML v2] ETH-USD ...
+  [ML v2] BNB-USD ...
+  [ML v2] SOL-USD ...
+
+=================================================================
+  ENSEMBLE PREDICTION RESULTS
+=================================================================
+[BUY]   RELIANCE.NS      Last:    1348.10  Pred:    1349.36  Chg: +0.09%  RSI: 38  Conf: 0.00  IND: BUY
+[HOLD]  TCS.NS           Last:    2389.80  Pred:    2393.51  Chg: +0.15%  RSI: 31  Conf: 0.00  IND: HOLD
+[BUY]   INFY.NS          Last:    1269.70  Pred:    1266.84  Chg: -0.23%  RSI: 40  Conf: 0.00  IND: HOLD
+[BUY]   HDFCBANK.NS      Last:     756.20  Pred:     763.44  Chg: +0.96%  RSI: 30  Conf: 0.00  IND: BUY
+[BUY]   ICICIBANK.NS     Last:    1233.80  Pred:    1241.93  Chg: +0.66%  RSI: 35  Conf: 0.00  IND: HOLD
+[HOLD]  AAPL             Last:     248.80  Pred:     249.74  Chg: +0.38%  RSI: 38  Conf: 0.00  IND: SELL
+[SELL]  MSFT             Last:     356.77  Pred:     355.56  Chg: -0.34%  RSI: 22  Conf: 0.00  IND: BUY
+[SELL]  GOOGL            Last:     274.34  Pred:     274.42  Chg: +0.03%  RSI: 25  Conf: 0.00  IND: BUY
+[SELL]  AMZN             Last:     199.34  Pred:     199.15  Chg: -0.09%  RSI: 37  Conf: 0.00  IND: HOLD
+[BUY]   NVDA             Last:     167.52  Pred:     169.91  Chg: +1.43%  RSI: 36  Conf: 0.00  IND: HOLD
+[SELL]  BTC-USD          Last:   66169.74  Pred:   65985.97  Chg: -0.28%  RSI: 41  Conf: 0.00  IND: HOLD
+[BUY]   ETH-USD          Last:    1987.76  Pred:    1980.43  Chg: -0.37%  RSI: 42  Conf: 0.00  IND: HOLD
+[HOLD]  BNB-USD          Last:     610.86  Pred:     608.92  Chg: -0.32%  RSI: 39  Conf: 0.00  IND: HOLD
+[SELL]  SOL-USD          Last:      82.56  Pred:      82.14  Chg: -0.51%  RSI: 41  Conf: 0.00  IND: HOLD
+=================================================================
+
+[STEP 4] Running v1 linear regression baseline...
+
+  🤖  Predicting RELIANCE.NS …
+  🤖  Predicting TCS.NS …
+  🤖  Predicting INFY.NS …
+  🤖  Predicting HDFCBANK.NS …
+  🤖  Predicting ICICIBANK.NS …
+  🤖  Predicting AAPL …
+  🤖  Predicting MSFT …
+  🤖  Predicting GOOGL …
+  🤖  Predicting AMZN …
+  🤖  Predicting NVDA …
+  🤖  Predicting BTC-USD …
+  🤖  Predicting ETH-USD …
+  🤖  Predicting BNB-USD …
+  🤖  Predicting SOL-USD …
+  [HOLD]  RELIANCE.NS      Pred: 1,345.87  Signal: HOLD  MAPE: 0.04%
+  [HOLD]  TCS.NS           Pred: 2,396.39  Signal: HOLD  MAPE: 0.10%
+  [HOLD]  INFY.NS          Pred: 1,267.55  Signal: HOLD  MAPE: 0.13%
+  [SELL]  HDFCBANK.NS      Pred: 752.18  Signal: SELL  MAPE: 0.07%
+  [HOLD]  ICICIBANK.NS     Pred: 1,232.32  Signal: HOLD  MAPE: 0.04%
+  [HOLD]  AAPL             Pred: 248.64  Signal: HOLD  MAPE: 0.03%
+  [HOLD]  MSFT             Pred: 355.15  Signal: HOLD  MAPE: 0.11%
+  [HOLD]  GOOGL            Pred: 273.53  Signal: HOLD  MAPE: 0.04%
+  [HOLD]  AMZN             Pred: 198.71  Signal: HOLD  MAPE: 0.07%
+  [HOLD]  NVDA             Pred: 167.25  Signal: HOLD  MAPE: 0.05%
+  [HOLD]  BTC-USD          Pred: 65,897.22  Signal: HOLD  MAPE: 0.22%
+  [SELL]  ETH-USD          Pred: 1,973.46  Signal: SELL  MAPE: 0.44%
+  [SELL]  BNB-USD          Pred: 607.72  Signal: SELL  MAPE: 0.29%
+  [SELL]  SOL-USD          Pred: 81.83  Signal: SELL  MAPE: 0.50%
+
+[DONE] All datasets loaded and models retrained successfully!
